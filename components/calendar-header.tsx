@@ -139,7 +139,7 @@ export function CalendarHeader({
               <CalendarDays className="h-6 w-6 text-primary" />
               <div>
                 <h1 className="text-4xl font-bold">Calendrier de Fanny</h1>
-                <p className="text-sm text-muted-foreground">Réservation de créneaux</p>
+                <p className="text-sm text-muted-foreground">Réservation de créneaux facile pour tous ses potes, c'est une femme occupée</p>
               </div>
             </div>
 
@@ -187,7 +187,7 @@ export function CalendarHeader({
             </div>
           </div>
 
-          {/* Bottom row: Filters and Search */}
+          {/* Bottom row: Search, Button, and Filters */}
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[200px] max-w-[300px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -200,57 +200,13 @@ export function CalendarHeader({
               />
             </div>
 
-            <Select value={currentMonth} onValueChange={handleMonthSelect}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Choisir un mois" />
-              </SelectTrigger>
-              <SelectContent>
-                {months.map((month) => (
-                  <SelectItem key={month} value={month}>
-                    {month}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedContinent} onValueChange={onContinentChange}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by Continent" />
-              </SelectTrigger>
-              <SelectContent>
-                {continents.map((continent) => (
-                  <SelectItem key={continent.value} value={continent.value}>
-                    {continent.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                  {selectedEventType
-                    ? selectedEventType.charAt(0).toUpperCase() + selectedEventType.slice(1)
-                    : "Event Type"}
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEventTypeChange(null)}>All Types</DropdownMenuItem>
-                {eventTypes.map((type) => (
-                  <DropdownMenuItem key={type} onClick={() => onEventTypeChange(type)}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="default" size="sm">
-                  Réserver un créneau
-                </Button>
-              </DialogTrigger>
+            <div className="flex-1 flex justify-center">
+              <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="default" size="sm">
+                    Réserver un créneau
+                  </Button>
+                </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                   <DialogTitle>{authMode === "signin" ? "Sign In" : "Create Account"}</DialogTitle>
@@ -328,7 +284,55 @@ export function CalendarHeader({
                   </div>
                 </form>
               </DialogContent>
-            </Dialog>
+              </Dialog>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Select value={currentMonth} onValueChange={handleMonthSelect}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue placeholder="Choisir un mois" />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map((month) => (
+                    <SelectItem key={month} value={month}>
+                      {month}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedContinent} onValueChange={onContinentChange}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by Continent" />
+                </SelectTrigger>
+                <SelectContent>
+                  {continents.map((continent) => (
+                    <SelectItem key={continent.value} value={continent.value}>
+                      {continent.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    {selectedEventType
+                      ? selectedEventType.charAt(0).toUpperCase() + selectedEventType.slice(1)
+                      : "Event Type"}
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onEventTypeChange(null)}>All Types</DropdownMenuItem>
+                  {eventTypes.map((type) => (
+                    <DropdownMenuItem key={type} onClick={() => onEventTypeChange(type)}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </header>
