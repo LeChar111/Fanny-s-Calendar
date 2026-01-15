@@ -5,36 +5,26 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { eventsData, type Event } from "@/lib/events-data"
 import { downloadICS } from "@/lib/generate-ics"
-import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog"
 import {
-  Sun,
-  Moon,
-  ChevronDown,
-  Search,
   CalendarPlus,
-  Database,
   Heart,
   User,
   MapPin,
   Clock,
   ExternalLink,
   Users,
-  FileDown,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { CalendarHeader } from "@/components/calendar-header"
 
 const months = [
   "January",
@@ -58,31 +48,15 @@ export default function DesignEventsCalendar() {
   const [selectedContinent, setSelectedContinent] = useState<string | null>(null)
   const [selectedEventType, setSelectedEventType] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [isDarkMode, setIsDarkMode] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userEmail, setUserEmail] = useState("")
   const [savedEvents, setSavedEvents] = useState<string[]>([])
   const [showOnlySaved, setShowOnlySaved] = useState(false)
-  const [authDialogOpen, setAuthDialogOpen] = useState(false)
-  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin")
-  const [authEmail, setAuthEmail] = useState("")
-  const [authPassword, setAuthPassword] = useState("")
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [eventDialogOpen, setEventDialogOpen] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme")
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-    const shouldBeDark = savedTheme === "dark" || (!savedTheme && prefersDark)
-
-    setIsDarkMode(shouldBeDark)
-    if (shouldBeDark) {
-      document.documentElement.classList.add("dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-    }
-
     const savedUser = localStorage.getItem("demoUser")
     if (savedUser) {
       setIsLoggedIn(true)
@@ -132,23 +106,6 @@ export default function DesignEventsCalendar() {
     }
   }
 
-  const handlePrint = () => {
-    window.print()
-  }
-
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode
-    setIsDarkMode(newDarkMode)
-
-    if (newDarkMode) {
-      document.documentElement.classList.add("dark")
-      localStorage.setItem("theme", "dark")
-    } else {
-      document.documentElement.classList.remove("dark")
-      localStorage.setItem("theme", "light")
-    }
-  }
-
   const handleAddToCalendar = (event: Event, month: string) => {
     const year = 2026
     const monthIndex = months.indexOf(month)
@@ -165,26 +122,6 @@ export default function DesignEventsCalendar() {
     })
   }
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Event submission:", { authEmail, authPassword })
-    alert("This is a demo. To enable submissions, connect a database.")
-    setAuthDialogOpen(false)
-    setAuthEmail("")
-    setAuthPassword("")
-  }
-
-  const handleAuthSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Demo: just store email in localStorage
-    localStorage.setItem("demoUser", authEmail)
-    setIsLoggedIn(true)
-    setUserEmail(authEmail)
-    setAuthDialogOpen(false)
-    setAuthEmail("")
-    setAuthPassword("")
-  }
-
   const handleSignOut = () => {
     localStorage.removeItem("demoUser")
     setIsLoggedIn(false)
@@ -194,7 +131,7 @@ export default function DesignEventsCalendar() {
 
   const toggleSaveEvent = (event: Event) => {
     if (!isLoggedIn) {
-      setAuthDialogOpen(true)
+      // User needs to sign in - they can use the Sign In button in the header
       return
     }
 
@@ -247,222 +184,33 @@ export default function DesignEventsCalendar() {
   const currentMonth = months[today.getMonth()]
   const currentDay = today.getDate()
 
+  const handleContinentChange = (continent: string) => {
+    setSelectedContinent(continent === "all" ? null : continent)
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 bg-background border-b border-border z-50">
-        <div className="px-6 py-4 pb-0">
-          <nav className="flex flex-col gap-4">
-            {/* Row 1: Title and dark mode toggle */}
-            <div className="flex items-start justify-between">
-              <div className="flex flex-col">
-                <h1 className="text-xl font-bold">
-                  <a href="/" className="hover:underline font-medium leading-7">
-                    Design Events Guide 2026
-                  </a>
-                </h1>
-                <p className="text-sm text-muted-foreground">Your guide to UX/UI, motion and graphic design events</p>
-              </div>
-              {/* Dark mode toggle */}
-              <div className="flex items-center gap-2">
-                <Sun className="h-4 w-4" />
-                <Switch checked={isDarkMode} onCheckedChange={toggleDarkMode} aria-label="Toggle dark mode" />
-                <Moon className="h-4 w-4" />
-              </div>
-            </div>
+      <CalendarHeader
+        selectedContinent={selectedContinent || "all"}
+        onContinentChange={handleContinentChange}
+        currentMonth={currentMonth}
+        onMonthChange={handleMonthSelect}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedEventType={selectedEventType}
+        onEventTypeChange={setSelectedEventType}
+        isLoggedIn={isLoggedIn}
+        userEmail={userEmail}
+        savedEventsCount={savedEvents.length}
+        showOnlySaved={showOnlySaved}
+        onShowOnlySavedChange={setShowOnlySaved}
+        onSignOut={handleSignOut}
+      />
 
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              {/* Left side: Search and filters */}
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Search events..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 w-[200px]"
-                  />
-                </div>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="default">
-                      Choose a month
-                      <ChevronDown />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {months.map((month) => (
-                      <DropdownMenuItem key={month} onClick={() => handleMonthSelect(month)}>
-                        {month}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="default">
-                      {selectedContinent || "Filter by Continent"}
-                      <ChevronDown />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setSelectedContinent(null)}>All Continents</DropdownMenuItem>
-                    {continents.map((continent) => (
-                      <DropdownMenuItem key={continent} onClick={() => setSelectedContinent(continent)}>
-                        {continent}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="default">
-                      {selectedEventType
-                        ? selectedEventType.charAt(0).toUpperCase() + selectedEventType.slice(1)
-                        : "Event Type"}
-                      <ChevronDown />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setSelectedEventType(null)}>All Types</DropdownMenuItem>
-                    {eventTypes.map((type) => (
-                      <DropdownMenuItem key={type} onClick={() => setSelectedEventType(type)}>
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="default">
-                      Submit Your Event
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[500px]">
-                    <DialogHeader>
-                      <DialogTitle>{authMode === "signin" ? "Sign In" : "Create Account"}</DialogTitle>
-                      <DialogDescription>
-                        {authMode === "signin"
-                          ? "Sign in to save events and access them across devices."
-                          : "Create an account to save events and access them across devices."}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleAuthSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="authEmail">Email</Label>
-                        <Input
-                          id="authEmail"
-                          type="email"
-                          required
-                          value={authEmail}
-                          onChange={(e) => setAuthEmail(e.target.value)}
-                          placeholder="you@example.com"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="authPassword">Password</Label>
-                        <Input
-                          id="authPassword"
-                          type="password"
-                          required
-                          value={authPassword}
-                          onChange={(e) => setAuthPassword(e.target.value)}
-                          placeholder="Enter your password"
-                        />
-                      </div>
-                      <DialogFooter>
-                        <Button type="submit" className="w-full">
-                          {authMode === "signin" ? "Sign In" : "Create Account"}
-                        </Button>
-                      </DialogFooter>
-                      <div className="text-center text-sm text-muted-foreground">
-                        {authMode === "signin" ? (
-                          <>
-                            Don't have an account?{" "}
-                            <button
-                              type="button"
-                              className="underline hover:text-foreground"
-                              onClick={() => setAuthMode("signup")}
-                            >
-                              Sign up
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            Already have an account?{" "}
-                            <button
-                              type="button"
-                              className="underline hover:text-foreground"
-                              onClick={() => setAuthMode("signin")}
-                            >
-                              Sign in
-                            </button>
-                          </>
-                        )}
-                      </div>
-                      <div className="flex items-start gap-2 p-3 rounded-md bg-muted/50 text-sm text-muted-foreground">
-                        <User className="h-4 w-4 mt-0.5 shrink-0" />
-                        <p>
-                          For demo purposes, you can still sign in with any email and password to test the saved events
-                          feature.
-                        </p>
-                      </div>
-                      <div className="flex items-start gap-2 p-3 rounded-md bg-muted text-sm text-muted-foreground">
-                        <Database className="h-4 w-4 mt-0.5 shrink-0" />
-                        <p>
-                          To enable real authentication, connect a database (Supabase, Neon, etc.) with auth support.
-                        </p>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              {/* Right side: Print, My Events, User */}
-              <div className="flex items-center gap-4 flex-wrap">
-                <Button variant="outline" size="icon" onClick={handlePrint} aria-label="Download PDF">
-                  <FileDown className="h-4 w-4" />
-                </Button>
-
-                {isLoggedIn && (
-                  <Button
-                    variant={showOnlySaved ? "default" : "outline"}
-                    size="default"
-                    onClick={() => setShowOnlySaved(!showOnlySaved)}
-                  >
-                    <Heart className="h-4 w-4" />
-                    My Events ({savedEvents.length})
-                  </Button>
-                )}
-
-                {isLoggedIn ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="default">
-                        <User className="h-4 w-4" />
-                        {userEmail}
-                        <ChevronDown />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={handleSignOut}>Sign Out</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <Button variant="outline" size="default" onClick={() => setAuthDialogOpen(true)}>
-                    <User className="h-4 w-4" />
-                    Sign In
-                  </Button>
-                )}
-              </div>
-            </div>
-          </nav>
-
-          <div className="flex mt-4">
+      {/* Calendar days header */}
+      <div className="sticky top-[73px] z-30 bg-background border-b border-border">
+        <div className="max-w-[1400px] mx-auto px-6">
+          <div className="flex">
             <div className="w-[180px] shrink-0" />
             <div className="flex-1 grid grid-cols-7 border-border border-b-0">
               {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
@@ -473,7 +221,7 @@ export default function DesignEventsCalendar() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
         <DialogContent className="sm:max-w-[550px]">

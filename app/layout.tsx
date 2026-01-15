@@ -1,7 +1,6 @@
 import type React from "react"
 import type { Metadata } from "next"
 
-import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
@@ -26,7 +25,7 @@ const _sourceSerif = Source_Serif_4({
 export const metadata: Metadata = {
   title: "Calendrier de Fanny | Réservation de créneaux",
   description: "Consultez les disponibilités et réservez un créneau avec Fanny",
-  generator: "v0.app",
+  generator: "Charles VIRON",
   icons: {
     icon: [
       {
@@ -56,7 +55,6 @@ export default function RootLayout({
       <body className={`font-sans antialiased`}>
         {children}
         <Toaster />
-        <Analytics />
       </body>
     </html>
   )
